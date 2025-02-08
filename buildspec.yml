@@ -1,0 +1,37 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "us-east-1" # Change to your region
+    ECR_REPOSITORY: "jacobwaltersmovies"
+    ECS_CLUSTER: "devcluster2"
+    ECS_SERVICE: "jacobwaltersmovies3"
+    TASK_DEFINITION: "jacobwaltersmovies"
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.$AWS_REGION.amazonaws.com
+      - IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+      - echo "Image tag: $IMAGE_TAG"
+      - echo "REPOSITORY_URI=$(aws ecr describe-repositories --repository-names $ECR_REPOSITORY --query 'repositories[0].repositoryUri' --output text)" >> $CODEBUILD_ENV_FILE
+      - echo "IMAGE_TAG=$IMAGE_TAG" >> $CODEBUILD_ENV_FILE
+
+  build:
+    commands:
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+
+  post_build:
+    commands:
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Updating ECS task definition...
+      - aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query taskDefinition > task-definition.json
+      - sed -i "s|<IMAGE>|$REPOSITORY_URI:$IMAGE_TAG|g" task-definition.json
+      - aws ecs register-task-definition --cli-input-json file://task-definition.json
+      - echo Deploying updated task to ECS...
+      - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
