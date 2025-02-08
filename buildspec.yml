@@ -11,36 +11,39 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.$AWS_REGION.amazonaws.com
-      
-      - export IMAGE_TAG=$(date +%Y%m%d%H%M%S)
-      - export REPOSITORY_URI=$(aws ecr describe-repositories --repository-names $ECR_REPOSITORY --query 'repositories[0].repositoryUri' --output text)
-      
-      - echo "Using image tag: $IMAGE_TAG"
+      - IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+      - REPOSITORY_URI=$(aws ecr describe-repositories --repository-names $ECR_REPOSITORY --query 'repositories[0].repositoryUri' --output text)
+      - echo "Image tag: $IMAGE_TAG"
       - echo "Repository URI: $REPOSITORY_URI"
+      - echo "IMAGE_TAG=$IMAGE_TAG" >> env.sh
+      - echo "REPOSITORY_URI=$REPOSITORY_URI" >> env.sh
 
   build:
     commands:
-      - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG ./next
-      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+      - echo "Loading environment variables..."
+      - source env.sh
+      - echo "Building the Docker image..."
+      - docker build -t "$REPOSITORY_URI:$IMAGE_TAG" ./next
+      - docker tag "$REPOSITORY_URI:$IMAGE_TAG" "$REPOSITORY_URI:latest"
 
   post_build:
     commands:
-      - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - docker push $REPOSITORY_URI:latest
+      - echo "Loading environment variables..."
+      - source env.sh
+      - echo "Pushing the Docker images..."
+      - docker push "$REPOSITORY_URI:$IMAGE_TAG"
+      - docker push "$REPOSITORY_URI:latest"
+      - echo "Updating ECS task definition..."
+      - aws ecs describe-task-definition --task-definition "$TASK_DEFINITION" --query taskDefinition > task-definition.json
 
-      - echo Updating ECS task definition...
-      - aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query taskDefinition > task-definition.json
-
-      # Modify the task definition with the new image
+      # Update the image in the task definition
       - jq --arg IMAGE "$REPOSITORY_URI:$IMAGE_TAG" '.containerDefinitions[0].image = $IMAGE' task-definition.json > new-task-def.json
       - aws ecs register-task-definition --cli-input-json file://new-task-def.json
 
-      # Get the new task definition revision
-      - export NEW_REVISION=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query "taskDefinition.revision" --output text)
+      # Get the new revision
+      - NEW_REVISION=$(aws ecs describe-task-definition --task-definition "$TASK_DEFINITION" --query "taskDefinition.revision" --output text)
 
-      - echo Deploying updated task to ECS...
-      - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $TASK_DEFINITION:$NEW_REVISION --force-new-deployment
+      - echo "Deploying updated task to ECS..."
+      - aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --task-definition "$TASK_DEFINITION:$NEW_REVISION" --force-new-deployment
