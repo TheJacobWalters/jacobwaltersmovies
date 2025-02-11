@@ -24,7 +24,7 @@ phases:
       - IMAGE_HASH=$(sudo docker save b5b93d56c2b0 | md5sum | awk '{ print $1 }')
       - echo IMAGE_HASH:$IMAGE_HASH
       - echo Pushing the Docker images...
-      - docker tag cdk-hnb659fds-container-assets-533267094010-us-east-1:latest  533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:latest
-      - docker push 533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:latest
+      - docker tag cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH  533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
+      - docker push 533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
       - echo Updating ECS service...
       - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
