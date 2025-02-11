@@ -14,18 +14,16 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 533267094010.dkr.ecr.$AWS_REGION.amazonaws.com
-      - echo "IMAGE_TAG=latest" >> env.sh
+      - export "IMAGE_TAG=latest"
 
   build:
     commands:
-      - source env.sh
       - echo Building the Docker image...
       - docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
       - docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:latest
 
   post_build:
     commands:
-      - source env.sh
       - echo Pushing the Docker images...
       - docker push $ECR_REPOSITORY:$IMAGE_TAG
       - docker push $ECR_REPOSITORY:latest
