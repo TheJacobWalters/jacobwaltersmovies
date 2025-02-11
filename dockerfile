@@ -1,5 +1,5 @@
 # Use an official Node.js image as the base image
-FROM public.ecr.aws/docker/library/node:18-alpine
+FROM public.ecr.aws/docker/library/node:18-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
