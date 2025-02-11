@@ -9,6 +9,7 @@ env:
     TASK_DEFINITION: "jacobwaltersmovies"
 artifacts:
     files: imagedefinitions.json
+    
 phases:
   pre_build:
     commands:
