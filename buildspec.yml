@@ -31,3 +31,4 @@ phases:
       - docker tag cdk-hnb659fds-container-assets-533267094010-us-east-1:latest  533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
       - docker push 533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
       - 'printf "[{ \"name\": \"my-container\", \"imageUri\" : \"533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:%s\"}]" $IMAGE_HASH > imagedefinitions.json'
+      - ls
