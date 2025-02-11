@@ -23,10 +23,11 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV HOSTNAME="0.0.0.0"
-ENV PORT=80
+ENV PORT=3000
 
 # Copy built output
 COPY --from=builder /app/public ./public
@@ -39,7 +40,7 @@ RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
 # Expose port 3000
-EXPOSE 80
+EXPOSE 3000
 
 # Start Next.js
 CMD ["node", "server.js"]
