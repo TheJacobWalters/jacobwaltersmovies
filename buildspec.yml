@@ -27,4 +27,4 @@ phases:
       - echo Pushing the Docker images...
       - docker tag cdk-hnb659fds-container-assets-533267094010-us-east-1:latest  533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
       - docker push 533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
-      - echo '[{ "name": "my-container", "uri" : "533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:'$IMAGE_HASH'" }]' > imagedefinitions.json
+      
