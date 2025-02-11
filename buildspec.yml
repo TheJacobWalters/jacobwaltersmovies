@@ -8,6 +8,9 @@ env:
     ECS_SERVICE: "jacobwaltersmovies3"
     TASK_DEFINITION: "jacobwaltersmovies"
 
+artifacts:
+    files: imagedefinitions.json
+
 phases:
   pre_build:
     commands:
@@ -26,4 +29,5 @@ phases:
       - echo IMAGE_HASH:$IMAGE_HASH
       - echo Pushing the Docker images...
       - docker tag cdk-hnb659fds-container-assets-533267094010-us-east-1:latest  533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
-      - docker push 533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH
+      - docker push "533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:$IMAGE_HASH"
+      - printf '[{ "name": "my-container", "imageUri" : "533267094010.dkr.ecr.us-east-1.amazonaws.com/cdk-hnb659fds-container-assets-533267094010-us-east-1:%s"}]' "$IMAGE_HASH" > imagedefinitions.json
